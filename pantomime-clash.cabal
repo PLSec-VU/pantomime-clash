@@ -1,0 +1,67 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           pantomime-clash
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/pantomime-clash#readme>
+homepage:       https://github.com/githubuser/pantomime-clash#readme
+bug-reports:    https://github.com/githubuser/pantomime-clash/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2026 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/pantomime-clash
+
+library
+  exposed-modules:
+      Pantomime.Clash
+  other-modules:
+      Paths_pantomime_clash
+  autogen-modules:
+      Paths_pantomime_clash
+  hs-source-dirs:
+      src
+  default-extensions:
+      AllowAmbiguousTypes
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DeriveDataTypeable
+      DeriveTraversable
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      ImportQualifiedPost
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      TemplateHaskell
+      TupleSections
+      TypeAbstractions
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , clash-prelude
+    , composition
+    , constraints
+    , pantomime
+  default-language: Haskell2010

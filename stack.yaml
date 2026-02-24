@@ -1,0 +1,14 @@
+snapshot: lts-24.0
+
+packages:
+- .
+
+extra-deps:
+- ../pantomime
+- ../grisette
+- ../sbv
+
+allow-newer-deps:
+- grisette
+
+allow-newer: true
