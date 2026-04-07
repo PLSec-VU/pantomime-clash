@@ -143,7 +143,12 @@ data BitVec n where
   BitVecZ :: BitVec 0
   BitVecP :: 1 <= n => Pantomime.BitVec n -> BitVec n
 
-withSize :: forall n r. Pantomime.KnownNat n => (n ~ 0 => r) -> (1 <= n => r) -> r
+withSize
+  :: forall n r
+   . Pantomime.KnownNat n
+  => (n ~ 0 => r)
+  -> (1 <= n => r)
+  -> r
 withSize zero pos = case Pantomime.natVal @n of
   0 -> case unsafeEq @n @0 of Dict -> zero
   _ -> case unsafeAxiom @(1 <= n) of Dict -> pos
@@ -411,8 +416,8 @@ sliceA bv SNat {} SNat {} = coerce go bv
 
       let hi = Pantomime.natVal @hi
       let lo = Pantomime.natVal @lo
-      -- SAFETY: Bitvector width should always be a natural number.
       Pantomime.SomeNat @width <- pure do
+        -- SAFETY: Bitvector width should always be a natural number.
         fromJust . Pantomime.someNatVal $ hi + 1 - lo
       -- SAFETY: We formed the 'KnownNat' from this exact expression.
       Dict <- pure $ unsafeEq @width @(hi + 1 - lo)
