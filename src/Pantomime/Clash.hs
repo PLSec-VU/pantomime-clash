@@ -17,8 +17,15 @@ module Pantomime.Clash
   , binary
   ) where
 
+import Data.Bits (Bits (..))
+import Data.Constraint (Dict (..))
+import Data.Constraint.Unsafe (unsafeAxiom)
+import Data.Composition ((.:))
+import Data.Data (Proxy (..))
+import Data.Functor.Identity (Identity (..))
+import Data.Maybe (fromJust)
 import Clash.Prelude (SNat (..))
-import Clash.Sized.Internal.BitVector (Bit)
+import Clash.Sized.Internal.BitVector (Bit, BitVector)
 import Clash.Sized.Internal.BitVector qualified as Bit
   ( eq##
   , neq##
@@ -26,34 +33,23 @@ import Clash.Sized.Internal.BitVector qualified as Bit
   , high
   , low
   )
-import Clash.Sized.Internal.BitVector (BitVector)
 import Clash.Sized.Internal.BitVector qualified as BitVector
 import Clash.Sized.Internal.Unsigned (Unsigned)
 import Clash.Sized.Internal.Unsigned qualified as Unsigned
 import Clash.Sized.Internal.Signed (Signed)
 import Clash.Sized.Internal.Signed qualified as Signed
-import Data.Bits (Bits (..))
-import Data.Constraint (Dict (..))
-import Data.Constraint.Unsafe (unsafeSNat)
-import Data.Composition ((.:))
-import Data.Data (Proxy (..))
-import Data.Functor.Identity (Identity (..))
-import GHC.Base (minInt, maxInt)
 import GHC.Exts (IsList (..), Coercible, coerce)
-import GHC.Num (integerToNatural, Integer (..))
 import GHC.TypeNats
   ( KnownNat
   , Natural
   , type (<=)
   , type (+)
   , type (-)
-  , natVal
-  , withKnownNat
   )
 import GHC.TypeLits qualified as TypeLits (natVal)
 import Pantomime (PluginAxioms (..))
 import Pantomime.BuiltIn qualified as Pantomime
-import Pantomime.Dict (SomeNat'(..), unsafeAxiom, unsafeEq, typeAdd, typeSub)
+import Pantomime.Dict (unsafeEq)
 
 axioms :: PluginAxioms
 axioms = PluginAxioms
@@ -130,12 +126,12 @@ axioms = PluginAxioms
     , ('BitVector.pack#, 'bit2bv)
     , ('BitVector.size#, 'sizeA)
     , ('BitVector.xToBV, 'id)
-    -- , ('BitVector.toInteger#, 'toIntegerBitVector)
+    -- , ('BitVector.toInteger#, 'undefined)
     , ('BitVector.slice#, 'sliceA)
     , ('(BitVector.++#), 'concatA)
     -- , ('BitVector.minBound#, 'minBoundBitVector)
-    , ('Bit.msb#, 'msb#)
 
+    , ('Bit.msb#, 'msb#)
     , ('Bit.eq##, 'eqbit)
     , ('Bit.neq##, 'neqbit)
     , ('Bit.high, 'highbit)
@@ -147,15 +143,15 @@ data BitVec n where
   BitVecZ :: BitVec 0
   BitVecP :: 1 <= n => Pantomime.BitVec n -> BitVec n
 
-withSize :: forall n r. KnownNat n => (n ~ 0 => r) -> (1 <= n => r) -> r
-withSize zero pos = case natVal $ Proxy @n of
+withSize :: forall n r. Pantomime.KnownNat n => (n ~ 0 => r) -> (1 <= n => r) -> r
+withSize zero pos = case Pantomime.natVal @n of
   0 -> case unsafeEq @n @0 of Dict -> zero
   _ -> case unsafeAxiom @(1 <= n) of Dict -> pos
 
 -- | Helper function to wrap a 'Pantomime' bit-vector primitive.
 nullary
   :: forall n
-   . KnownNat n
+   . Pantomime.KnownNat n
   => (1 <= n => Pantomime.BitVec n)
   -> BitVec n
 nullary value = withSize @n BitVecZ $ BitVecP value
@@ -400,11 +396,11 @@ concatA = coerce @(BitVec l -> BitVec r -> BitVec (l + r)) \cases
 sliceA
   :: forall hi lo top bv
    . Coercible BitVec bv
-  => bv ((hi + 1) + top)
+  => bv (hi + 1 + top)
   -> SNat hi
   -> SNat lo
-  -> bv ((hi + 1) - lo)
-sliceA bv SNat {} SNat {} = coerce go $ bv
+  -> bv (hi + 1 - lo)
+sliceA bv SNat {} SNat {} = coerce go bv
   where
     go :: BitVec ((hi + 1) + top) -> BitVec ((hi + 1) - lo)
     go x = runIdentity do
@@ -413,8 +409,13 @@ sliceA bv SNat {} SNat {} = coerce go $ bv
       Dict <- pure $ unsafeAxiom @(1 <= hi + 1 + top)
       let x' = case x of BitVecP inner -> inner
 
-      SomeNat' @hi1 <- pure $ typeAdd @hi @1
-      SomeNat' @width <- pure $ typeSub @hi1 @lo
+      let hi = Pantomime.natVal @hi
+      let lo = Pantomime.natVal @lo
+      -- SAFETY: Bitvector width should always be a natural number.
+      Pantomime.SomeNat @width <- pure do
+        fromJust . Pantomime.someNatVal $ hi + 1 - lo
+      -- SAFETY: We formed the 'KnownNat' from this exact expression.
+      Dict <- pure $ unsafeEq @width @(hi + 1 - lo)
 
       -- TODO: Not sure if this is actually true? I feel like it should be.
       Dict <- pure $ unsafeAxiom @(lo + width <= hi + 1 + top)
@@ -463,16 +464,16 @@ bit2bv
 bit2bv = coerce
 
 eqbit :: Coercible (BitVec 1) Bit => Bit -> Bit -> Bool
-eqbit = coerce $ (==) @Bit
+eqbit = coerce $ (==) @(BitVec 1)
 
 neqbit :: Coercible (BitVec 1) Bit => Bit -> Bit -> Bool
-neqbit = coerce $ (/=) @Bit
+neqbit = coerce $ (/=) @(BitVec 1)
 
-lowbit :: Bit
-lowbit = 0
+lowbit :: Coercible (BitVec 1) Bit => Bit
+lowbit = coerce $ BitVecP @1 0
 
-highbit :: Bit
-highbit = 1
+highbit :: Coercible (BitVec 1) Bit => Bit
+highbit = coerce $ BitVecP @1 1
 
 msb#
   :: forall n bv bit
@@ -486,24 +487,12 @@ msb# = coerce @(BitVec n -> BitVec 1) \case
   -- TODO: Maybe we should check what the behaviour is of clash in this respect.
   BitVecZ -> BitVecP 0
   BitVecP x -> runIdentity do
-    Dict <- pure $ withNat x (Dict @(KnownNat n))
-    SomeNat' @n' <- pure $ typeSub @n @1
+    Dict <- pure $ Pantomime.bvnat x
+    Pantomime.SomeNat @n' <- pure do
+      -- SAFETY: Value is always a natural still, as 'n' is a positive value.
+      -- Thus we can safely unwrap the 'Maybe'.
+      fromJust . Pantomime.someNatVal $ Pantomime.natVal @n - 1
+    -- SAFETY: We know they're equal, so this must also hold!
     Dict <- pure $ unsafeAxiom @(n' + 1 <= n)
     let result = Pantomime.bvselect @n' @1 x
     pure $ BitVecP result
-
-withNat
-  :: forall n r
-   . Pantomime.BitVec n
-  -> (KnownNat n => r)
-  -> r
-withNat bv f = do
-  let i = i2hsi $ Pantomime.bvsize bv
-  let n = unsafeSNat @n $ integerToNatural i
-  withKnownNat n f
-
-i2hsi :: Pantomime.Integer -> Integer
-i2hsi i = if
-  | i > fromIntegral maxInt -> IP undefined
-  | i < fromIntegral minInt -> IN undefined
-  | otherwise -> IS $ Pantomime.toInt# $ Pantomime.i2bv i
