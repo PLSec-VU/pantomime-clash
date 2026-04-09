@@ -63,6 +63,7 @@ ghc-options:
 - -Wpartial-fields
 - -Wredundant-constraints
 - -Wprepositive-qualified-module
+- -fexpose-all-unfoldings
 
 library:
   source-dirs: src
