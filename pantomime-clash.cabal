@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Pantomime.Clash
+      Pantomime.Clash.NonInterference
   other-modules:
       Paths_pantomime_clash
   autogen-modules:
