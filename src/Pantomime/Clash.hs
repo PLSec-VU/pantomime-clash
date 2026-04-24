@@ -19,12 +19,11 @@ module Pantomime.Clash
   ) where
 
 import Data.Bits (Bits (..))
-import Data.Constraint (Dict (..), HasDict (..))
-import Data.Constraint.Unsafe (unsafeAxiom)
 import Data.Composition ((.:))
+import Data.Constraint (Dict (..))
+import Data.Constraint.Unsafe (unsafeAxiom)
 import Data.Data (Proxy (..))
 import Data.Functor.Identity (Identity (..))
-import Data.Maybe (fromJust)
 import Clash.Prelude (SNat (..))
 import Clash.Sized.Internal.BitVector (Bit, BitVector)
 import Clash.Sized.Internal.BitVector qualified as Bit
@@ -468,20 +467,22 @@ sliceA bv SNat {} SNat {} = coerce go bv
   where
     go :: BitVec (hi + 1 + top) -> BitVec (hi + 1 - lo)
     go x = runIdentity do
-      -- SAFETY: Since neither 'hi' or 'top' can be negative, the input
-      -- bitvector is never zero-sized.
+      -- SAFETY: Reduced, you get '0 <= hi + top', which is true for all
+      -- natural numbers.
       Dict <- pure $ unsafeAxiom @(1 <= hi + 1 + top)
       let x' = case x of BitVecP inner -> inner
 
-      let hi = Pantomime.natSing @hi
-      let one = Pantomime.natSing @1
-      let lo = Pantomime.natSing @lo
-      -- SAFETY: Bitvector width should always be a natural number.
-      let width = fromJust $ hi Pantomime.%+ one Pantomime.%- lo
-      Pantomime.SNat @width <- pure width
-      Dict <- pure $ evidence width
+      let hi = Pantomime.SNat @hi
+      let one = Pantomime.SNat @1
+      let lo = Pantomime.SNat @lo
+      -- TODO: I think this is a requirement on the function. I'm not sure if
+      -- you could violate it on the call somehow. Any sound usage of this
+      -- function should satisfy this though! It says that the slice is
+      -- non-negative sized.
+      Dict <- pure $ unsafeAxiom @(lo <= hi + 1)
+      Pantomime.SNat @width <- pure $ hi Pantomime.%+ one Pantomime.%- lo
 
-      -- TODO: Not sure if this is actually true? I feel like it should be.
+      -- SAFETY: If you reduce this term, you end up with '0 <= top'.
       Dict <- pure $ unsafeAxiom @(lo + width <= hi + 1 + top)
 
       pure $ nullary (Pantomime.bvselect @lo @width x')
@@ -552,15 +553,11 @@ msb# = coerce \case
   BitVecZ -> BitVecP 0
   BitVecP x -> runIdentity do
     Dict <- pure $ Pantomime.bvnat x
-    let n = Pantomime.natSing @n
-    let one = Pantomime.natSing @1
-    -- SAFETY: Value is always a natural still, as 'n' is a positive value. Thus
-    -- we can safely unwrap the 'Maybe'.
-    let idx = fromJust $ n Pantomime.%- one
-    Dict <- pure $ evidence idx
-    Pantomime.SNat @idx <- pure idx
+    let n = Pantomime.SNat @n
+    let one = Pantomime.SNat @1
+    Pantomime.SNat @idx <- pure $ n Pantomime.%- one
 
-    -- SAFETY: idx = n - 1, thus this inequality must also hold.
+    -- SAFETY: 'idx = n - 1', thus this inequality must also hold.
     Dict <- pure $ unsafeAxiom @(idx + 1 <= n)
     let result = Pantomime.bvselect @idx @1 x
     pure $ BitVecP result
