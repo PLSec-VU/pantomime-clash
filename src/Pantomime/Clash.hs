@@ -71,6 +71,7 @@ axioms = PluginAxioms
     , ('Signed.abs#, 'absA)
     , ('Signed.eq#, 'eqA)
     , ('Signed.neq#, 'neqA)
+    -- FIXME: These comparisons are for unsigned bitvectors.
     , ('Signed.lt#, 'ltA)
     , ('Signed.le#, 'leA)
     , ('Signed.gt#, 'gtA)
@@ -82,6 +83,8 @@ axioms = PluginAxioms
     , ('Signed.pack#, 'bvcoerceA)
     , ('Signed.size#, 'sizeA)
     , ('Signed.resize#, 'sresizeA)
+    -- FIXME: This enum from is for unsigned bitvectors.
+    , ('Signed.enumFrom#, 'enumFromU)
 
     , ('(Unsigned.+#), 'addA)
     , ('(Unsigned.-#), 'subA)
@@ -104,6 +107,7 @@ axioms = PluginAxioms
     , ('Unsigned.pack#, 'bvcoerceA)
     , ('Unsigned.size#, 'sizeA)
     , ('Unsigned.resize#, 'zresizeA)
+    , ('Unsigned.enumFrom#, 'enumFromU)
 
     , ('(BitVector.+#), 'addA)
     , ('(BitVector.-#), 'subA)
@@ -513,6 +517,26 @@ sresizeA
   => bv l
   -> bv r
 sresizeA = resizeA Pantomime.bvsresize
+
+-- TODO: Also make a signed one.
+enumFromU
+  :: forall bv n
+   . Coercible BitVec bv
+  => bv n
+  -> [bv n]
+enumFromU = coerce @(BitVec n -> [BitVec n]) \case
+  BitVecZ -> [BitVecZ]
+  BitVecP value -> BitVecP <$> go value
+  where
+    upper :: Pantomime.KnownNat n => 1 <= n => Pantomime.BitVec n
+    upper = -1
+
+    go :: 1 <= n => Pantomime.BitVec n -> [Pantomime.BitVec n]
+    go x = runIdentity do
+      Dict <- pure $ Pantomime.bvnat x
+      pure $ x : if
+        | x == upper -> []
+        | otherwise -> go $ Pantomime.bvadd x 1
 
 bv2bit
   :: Coercible BitVec bv
