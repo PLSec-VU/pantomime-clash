@@ -5,6 +5,17 @@
 
 packages:
 - completed:
+    commit: 5a1dd347fb25e5ee4280d644be2762a2dd121647
+    git: git@github.com:PLSec-VU/pantomime.git
+    name: pantomime
+    pantry-tree:
+      sha256: 4c5a87798f151f5a6c86fe3d7ea0e62f809075227ad4443dc88e68cd0473f4d1
+      size: 2771
+    version: 0.1.0.0
+  original:
+    commit: 5a1dd347fb25e5ee4280d644be2762a2dd121647
+    git: git@github.com:PLSec-VU/pantomime.git
+- completed:
     commit: ae4d837886efb2e7838f89271f343d6fa8130388
     git: git@github.com:RobinWebbers/grisette.git
     name: grisette
