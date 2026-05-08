@@ -49,7 +49,7 @@ import GHC.TypeNats
 import GHC.TypeLits qualified as TypeLits (natVal)
 import Pantomime (PluginAxioms (..))
 import Pantomime.BuiltIn qualified as Pantomime
-import Pantomime.Dict (unsafeEq)
+import Pantomime.Util (unsafeEq)
 
 axioms :: PluginAxioms
 axioms = PluginAxioms
@@ -431,7 +431,7 @@ toIntegerA
   -> Integer
 toIntegerA = coerce \case
   BitVecZ -> 0
-  BitVecP x -> Pantomime.i2hsi $ Pantomime.bv2i x
+  BitVecP x -> Pantomime.toInteger $ Pantomime.bv2i x
 
 bvcoerceA
   :: forall bv bv' n
@@ -528,12 +528,14 @@ enumFromU = coerce @(BitVec n -> [BitVec n]) \case
   BitVecZ -> [BitVecZ]
   BitVecP value -> BitVecP <$> go value
   where
+    -- TODO: I guess it would be better to have an instance of Bounded for
+    -- BitVec...
     upper :: Pantomime.KnownNat n => 1 <= n => Pantomime.BitVec n
     upper = -1
 
     go :: 1 <= n => Pantomime.BitVec n -> [Pantomime.BitVec n]
     go x = runIdentity do
-      Dict <- pure $ Pantomime.bvnat x
+      Pantomime.SNat <- pure $ Pantomime.bvsize x
       pure $ x : if
         | x == upper -> []
         | otherwise -> go $ Pantomime.bvadd x 1
@@ -576,8 +578,7 @@ msb# = coerce \case
   -- TODO: Maybe we should check what the behaviour is of clash in this respect.
   BitVecZ -> BitVecP 0
   BitVecP x -> runIdentity do
-    Dict <- pure $ Pantomime.bvnat x
-    let n = Pantomime.SNat @n
+    let n = Pantomime.bvsize x
     let one = Pantomime.SNat @1
     Pantomime.SNat @idx <- pure $ n Pantomime.%- one
 

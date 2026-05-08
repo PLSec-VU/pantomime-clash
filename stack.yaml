@@ -5,7 +5,7 @@ packages:
 
 extra-deps:
 - git: git@github.com:PLSec-VU/pantomime.git
-  commit: 5a1dd347fb25e5ee4280d644be2762a2dd121647
+  commit: 1fdddf03e183b1e430c78a8b88dce5db04be267c
 - git: git@github.com:RobinWebbers/grisette.git
   commit: ae4d837886efb2e7838f89271f343d6fa8130388
 - sbv-13.6
