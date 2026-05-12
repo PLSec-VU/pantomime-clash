@@ -431,7 +431,7 @@ toIntegerA
   -> Integer
 toIntegerA = coerce \case
   BitVecZ -> 0
-  BitVecP x -> Pantomime.toInteger $ Pantomime.bv2i x
+  BitVecP x -> Pantomime.toInteger $ Pantomime.bvu2i x
 
 bvcoerceA
   :: forall bv bv' n
