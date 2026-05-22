@@ -38,7 +38,7 @@ import Clash.Sized.Internal.Unsigned (Unsigned)
 import Clash.Sized.Internal.Unsigned qualified as Unsigned
 import Clash.Sized.Internal.Signed (Signed)
 import Clash.Sized.Internal.Signed qualified as Signed
-import GHC.Exts (IsList (..), Coercible, coerce, Int#, Int (..))
+import GHC.Exts (Int (..), IsList (..), Coercible, coerce)
 import GHC.TypeNats
   ( KnownNat
   , Natural
@@ -314,7 +314,6 @@ xorA = coerce $ xor @(BitVec n)
 shiftA
   :: forall bv n
    . Coercible BitVec bv
-  => Pantomime.Embeddable (Pantomime.BitVec Pantomime.PlatformWordSize) Int#
   => KnownNat n
   => (Pantomime.BitVec n -> Pantomime.BitVec n -> Pantomime.BitVec n)
   -> bv n
@@ -322,7 +321,7 @@ shiftA
   -> bv n
 shiftA f = coerce $ \val idx -> nullary do
   let val' = case val of BitVecP inner -> inner
-  let idx' = let !(I# inner) = idx in Pantomime.project inner
+  let idx' = let !(I# inner) = idx in Pantomime.fromInt# inner
   -- FIXME: A shift past the bitsize is undefined behaviour. The best thing to
   -- do would be to model it as either an uninterpreted function, or to match
   -- whatever Clash does.
@@ -332,7 +331,6 @@ shiftA f = coerce $ \val idx -> nullary do
 shlA
   :: forall bv n
    . Coercible BitVec bv
-  => Pantomime.Embeddable (Pantomime.BitVec Pantomime.PlatformWordSize) Int#
   => KnownNat n
   => bv n
   -> Int
@@ -342,7 +340,6 @@ shlA = shiftA Pantomime.bvshl
 ashrA
   :: forall bv n
    . Coercible BitVec bv
-  => Pantomime.Embeddable (Pantomime.BitVec Pantomime.PlatformWordSize) Int#
   => KnownNat n
   => bv n
   -> Int
@@ -352,7 +349,6 @@ ashrA = shiftA Pantomime.bvashr
 lshrA
   :: forall bv n
    . Coercible BitVec bv
-  => Pantomime.Embeddable (Pantomime.BitVec Pantomime.PlatformWordSize) Int#
   => KnownNat n
   => bv n
   -> Int

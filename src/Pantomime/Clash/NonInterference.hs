@@ -44,7 +44,7 @@ simulationNI SimulationNI { .. } = do
         let (ss', o) = simulator ss x
         ((sl', ss'), o)
 
-  \si i -> convert $ c1 si i == c2 si i
+  \si i -> Pantomime.boolean $ c1 si i == c2 si i
 
 data SimulatorExistNI si sl ss i l o where
   SimulatorExistNI ::
@@ -73,7 +73,7 @@ tickStateCorrespondence SimulatorExistNI { .. } = do
         let (sl', _ss') = projection s'
         sl'
 
-  \s i -> convert $ leakage' s i == implementation' s i
+  \s i -> Pantomime.boolean $ leakage' s i == implementation' s i
 
 projectionCoherence
   :: Eq o
@@ -95,12 +95,7 @@ projectionCoherence SimulatorExistNI { .. } = do
         let (_sl', ss') = projection s'
         (ss', o)
 
-  \s i s' i' -> convert do
+  \s i s' i' -> Pantomime.boolean do
     let pre = leakage' s i == leakage' s' i'
     let post = implementation' s i == implementation' s' i'
     not pre || post
-
-convert :: Bool -> Pantomime.Bool
-convert value = case value of
-  True -> Pantomime.True
-  False -> Pantomime.False
