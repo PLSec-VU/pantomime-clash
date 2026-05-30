@@ -4,9 +4,9 @@ packages:
 - .
 
 extra-deps:
-- github: PLSec-VU/pantomime.git
+- github: PLSec-VU/pantomime
   commit: 491638b742ce2d9fc92976ab0e2037ba259e5ae9
-- github: RobinWebbers/grisette.git
+- github: RobinWebbers/grisette
   commit: ae4d837886efb2e7838f89271f343d6fa8130388
 - sbv-13.6
 - clash-prelude-1.8.4
