@@ -36,6 +36,7 @@ import Clash.Sized.Internal.BitVector qualified as Bit
 import Clash.Sized.Internal.BitVector qualified as BitVector
 import Clash.Sized.Internal.Unsigned (Unsigned)
 import Clash.Sized.Internal.Unsigned qualified as Unsigned
+import Clash.Sized.Vector qualified as Vector
 import Clash.Sized.Internal.Signed (Signed)
 import Clash.Sized.Internal.Signed qualified as Signed
 import GHC.Exts (Int (..), IsList (..), Coercible, coerce)
@@ -140,6 +141,8 @@ axioms = PluginAxioms
     , ('Bit.neq##, 'neqbit)
     , ('Bit.high, 'highbit)
     , ('Bit.low, 'lowbit)
+
+    , ('(Vector.!!), 'Pantomime.aselect)
     ]
   }
 

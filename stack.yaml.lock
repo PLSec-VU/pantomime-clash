@@ -5,27 +5,27 @@
 
 packages:
 - completed:
-    commit: 491638b742ce2d9fc92976ab0e2037ba259e5ae9
-    git: git@github.com:PLSec-VU/pantomime.git
     name: pantomime
     pantry-tree:
       sha256: db092592a9914ed1ee72d5916ae4f063667170c0b30a5dc9fd36412582682947
       size: 2709
+    sha256: 1f8b20c1d38659692f2f9320f75b635483ea1750e560b87c89084cc034b8fb58
+    size: 81865
+    url: https://github.com/PLSec-VU/pantomime/archive/491638b742ce2d9fc92976ab0e2037ba259e5ae9.tar.gz
     version: 0.1.0.0
   original:
-    commit: 491638b742ce2d9fc92976ab0e2037ba259e5ae9
-    git: git@github.com:PLSec-VU/pantomime.git
+    url: https://github.com/PLSec-VU/pantomime/archive/491638b742ce2d9fc92976ab0e2037ba259e5ae9.tar.gz
 - completed:
-    commit: ae4d837886efb2e7838f89271f343d6fa8130388
-    git: git@github.com:RobinWebbers/grisette.git
     name: grisette
     pantry-tree:
       sha256: ac978bcc6a35ee65677dbe41373c2799759457dedee85c6888a2cb7b362a2068
       size: 31883
+    sha256: 46de15734b258feee28ccc47c60a36a12fd3e975077615e8c31291b9d8ca79ef
+    size: 555460
+    url: https://github.com/RobinWebbers/grisette/archive/ae4d837886efb2e7838f89271f343d6fa8130388.tar.gz
     version: 0.13.0.1
   original:
-    commit: ae4d837886efb2e7838f89271f343d6fa8130388
-    git: git@github.com:RobinWebbers/grisette.git
+    url: https://github.com/RobinWebbers/grisette/archive/ae4d837886efb2e7838f89271f343d6fa8130388.tar.gz
 - completed:
     hackage: sbv-13.6@sha256:65099c81504a2e85a49cc94a4f8bacad12c423b9171cf2ef3b6686a6a71d99ec,27240
     pantry-tree:
