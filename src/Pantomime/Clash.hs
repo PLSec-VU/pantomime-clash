@@ -12,6 +12,7 @@ module Pantomime.Clash
   -- This one allows for zero-sized bitvectors, unlike the primitive pantomime
   -- version.
   , BitVec (..)
+  , VecArray (..)
   , withSize
   , nullary
   , unary
@@ -36,12 +37,15 @@ import Clash.Sized.Internal.BitVector qualified as Bit
 import Clash.Sized.Internal.BitVector qualified as BitVector
 import Clash.Sized.Internal.Unsigned (Unsigned)
 import Clash.Sized.Internal.Unsigned qualified as Unsigned
+import Clash.Sized.Vector (Vec)
 import Clash.Sized.Vector qualified as Vector
 import Clash.Sized.Internal.Signed (Signed)
 import Clash.Sized.Internal.Signed qualified as Signed
+import Data.Kind (Type)
 import GHC.Exts (Int (..), IsList (..), Coercible, coerce)
 import GHC.TypeNats
   ( KnownNat
+  , Nat
   , Natural
   , type (<=)
   , type (+)
@@ -59,6 +63,7 @@ axioms = PluginAxioms
     , (''Unsigned, ''BitVec)
     , (''BitVector, ''BitVec)
     , (''Bit, ''BitVec1)
+    , (''Vec, ''VecArray)
     ]
   , termAxioms =
     [ ('(Signed.+#), 'addA)
@@ -142,7 +147,7 @@ axioms = PluginAxioms
     , ('Bit.high, 'highbit)
     , ('Bit.low, 'lowbit)
 
-    , ('(Vector.!!), 'Pantomime.aselect)
+    , ('(Vector.!!), 'vecIndex)
     ]
   }
 
@@ -237,6 +242,21 @@ instance Bits (BitVec n) where
   popCount = undefined
 
 type BitVec1 = BitVec 1
+
+newtype VecArray (n :: Nat) (a :: Type) = VecArray
+  { getVecArray :: Pantomime.Array (Pantomime.BitVec Pantomime.PlatformWordSize) a
+  }
+
+vecIndex
+  :: forall vec n a
+   . Coercible VecArray vec
+  => vec n a
+  -> Int
+  -> a
+vecIndex = coerce $ \(VecArray arr) idx ->
+  let !(I# idx#) = idx
+      key = Pantomime.fromInt# idx#
+  in Pantomime.aselect @(Pantomime.BitVec Pantomime.PlatformWordSize) @a arr key
 
 addA
   :: forall bv n
